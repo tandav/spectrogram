@@ -11,6 +11,8 @@ FFMpegWriter = manimation.writers['ffmpeg']
 writer = FFMpegWriter(
     fps=60,
     # codec='ffv1', default codec is 'h264'
+    # codec='h264_videotoolbox',
+    # codec='h264',
     # bitrate=
     metadata = dict(title='Radiant', artist='N. Rajam',)
 )
@@ -22,11 +24,11 @@ OUTPUT_VIDEO = '/Users/tandav/Desktop/radiant.mp4'
 BACKEND = np
 
 
-frame_width  = 1920 #* 2
-frame_height = 1080 #* 2
+# frame_width  = 1920 #* 2
+# frame_height = 1080 #* 2
 
-# frame_width  = 1920//4
-# frame_height = 1080//4
+frame_width  = 1920//4
+frame_height = 1080//4
 
 
 rate, track = read(INPUT_AUDIO) # now supports only mono .wav files
@@ -73,6 +75,7 @@ noverlap = nperseg - step
 print((n - noverlap) // step, fps * seconds)
 
 
+
 x = track
 shape   = ((x.shape[0] - noverlap) // step, nperseg)
 strides = (step * x.strides[-1], x.strides[-1])
@@ -98,7 +101,7 @@ if BACKEND is not np:
 im = plt.pcolormesh(T_frame, F_frame, ff, cmap='viridis', vmin=0, vmax=30) # shading='gouraud' nearest
 plt.semilogy()
 plt.grid(False)
-plt.ylim(0, 30)
+# plt.ylim(0, 30)
 
 
 t = time.time()
@@ -125,5 +128,3 @@ with writer.saving(fig, 'tmp.mp4', dpi=100):
 
 cmd = 'ffmpeg', '-y', '-i', 'tmp.mp4', '-i', INPUT_AUDIO, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-shortest', OUTPUT_VIDEO
 subprocess.check_output(cmd)
-
-print(OUTPUT_VIDEO)
