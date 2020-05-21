@@ -73,7 +73,6 @@ noverlap = nperseg - step
 print((n - noverlap) // step, fps * seconds)
 
 
-
 x = track
 shape   = ((x.shape[0] - noverlap) // step, nperseg)
 strides = (step * x.strides[-1], x.strides[-1])
@@ -106,8 +105,8 @@ t = time.time()
 last_frame = 0
 # todo: configure DPI and bitrate
 with writer.saving(fig, 'tmp.mp4', dpi=100):
-    # for i, chunk in enumerate(audio_rolled[frame_width]):
-    for i, chunk in enumerate(audio_rolled):
+    for i, chunk in enumerate(audio_rolled[frame_width]):
+    # for i, chunk in enumerate(audio_rolled):
         if i % 10 == 0:
             fps = (i - last_frame) / (time.time() - t)
             print(f'{i + 1} / {len(audio_rolled)}, {round((i + 1)/len(audio_rolled), 3)}, FPS: {fps}')
@@ -126,3 +125,5 @@ with writer.saving(fig, 'tmp.mp4', dpi=100):
 
 cmd = 'ffmpeg', '-y', '-i', 'tmp.mp4', '-i', INPUT_AUDIO, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-shortest', OUTPUT_VIDEO
 subprocess.check_output(cmd)
+
+print(OUTPUT_VIDEO)
