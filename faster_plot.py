@@ -13,14 +13,12 @@ from scipy.io.wavfile import read
 
 INPUT_AUDIO  = '/Users/tandav/Documents/GoogleDrive/radiant.wav'
 OUTPUT_VIDEO = '/Users/tandav/Desktop/radiant2.mp4'
-BACKEND = np
 
+frame_width  = 1920 #* 2
+frame_height = 1080 #* 2
 
-# frame_width  = 1920 #* 2
-# frame_height = 1080 #* 2
-
-frame_width  = 1920 // 4
-frame_height = 1080 // 4
+# frame_width  = 1920 // 4
+# frame_height = 1080 // 4
 
 
 rate, track = read(INPUT_AUDIO) # now supports only mono .wav files
@@ -71,12 +69,12 @@ print((n - noverlap) // step, fps * seconds)
 x = track
 shape   = ((x.shape[0] - noverlap) // step, nperseg)
 strides = (step * x.strides[-1], x.strides[-1])
-audio_rolled = BACKEND.array(np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides))
-win = BACKEND.hanning(audio_rolled.shape[1])
-audio_rolled.shape
+audio_rolled = np.array(np.lib.stride_tricks.as_strided(x, shape=shape, strides=strides))
+win = np.hanning(audio_rolled.shape[1])
+# audio_rolled.shape
 
 
-frame = BACKEND.zeros((frame_width, frame_height))
+frame = np.zeros((frame_width, frame_height))
 
 #TODO # t_frame = np.linspace (0 + dt * fi, seconds / frames, frame_width)
 t_frame = np.linspace (0, 1, frame_width)
@@ -89,8 +87,6 @@ fig = plt.figure(figsize=(frame_width / 100, frame_height / 100), frameon=False,
 # fig.subplots_adjust(left=0.1, bottom=0, right=0.9, top=1, wspace=None, hspace=None)
 fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
 ff = frame.T
-if BACKEND is not np:
-    ff = cp.asnumpy(ff)
 im = plt.pcolormesh(T_frame, F_frame, ff, cmap='viridis', vmin=0, vmax=30) # shading='gouraud' nearest
 plt.semilogy()
 plt.grid(False)
@@ -117,14 +113,30 @@ ax.axis('off')
 
 
 # Open an ffmpeg process
-outf = 'tmp.mp4'
-cmdstring = ('ffmpeg', 
+cmd = ('ffmpeg',
+    '-loglevel', 'trace',
+    '-hwaccel', 'videotoolbox',
+    '-threads', '16',
     '-y', '-r', '60', # overwrite, 60fps
-    '-s', '%dx%d' % (canvas_width, canvas_height), # size of image string
-    '-pix_fmt', 'argb', # format
-    '-f', 'rawvideo',  '-i', '-', # tell ffmpeg to expect raw video from the pipe
-    '-vcodec', 'mpeg4', outf) # output encoding
-p = subprocess.Popen(cmdstring, stdin=subprocess.PIPE)
+     '-s', f'{canvas_width}x{canvas_height}',  # size of image string
+     '-f', 'rawvideo',
+     # '-pix_fmt', 'argb', # format
+     '-pix_fmt', 'rgba', # format
+     # '-pix_fmt', 'rgb24', # format
+    # '-f', 'image2pipe',
+    # '-i', 'pipe:', '-', # tell ffmpeg to expect raw video from the pipe
+    '-i', '-', # tell ffmpeg to expect raw video from the pipe
+    '-i', INPUT_AUDIO,
+    '-c:v', 'hevc_videotoolbox',
+    '-pix_fmt', 'yuv420p',
+    '-tag:v', 'hvc1', '-profile:v', 'main10',
+    # '-b:v', '16M',
+    # '-b:v', '1M',
+    '-b:v', '100k',
+     OUTPUT_VIDEO) # output encoding
+
+# cmd = 'cat'
+p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
 for i, chunk in enumerate(audio_rolled[frame_width]):
 # for i, chunk in enumerate(audio_rolled):
@@ -133,12 +145,10 @@ for i, chunk in enumerate(audio_rolled[frame_width]):
         print(f'{i + 1} / {len(audio_rolled)}, {round((i + 1)/len(audio_rolled), 3)}, FPS: {fps}')
         t = time.time()
         last_frame = i
-    a = 20 * np.log10(np.abs(BACKEND.fft.rfft(chunk * win)))
+    a = 20 * np.log10(np.abs(np.fft.rfft(chunk * win)))
     #f = np.fft.rfftfreq(n, d = 1. / rate)
     frame[i % frame_width, :] = a[:-1]
     ff = frame.T
-    if BACKEND is not np:
-        ff = cp.asnumpy(ff)
     im.set_array(ff[:-1,:-1].ravel())
     # writer.grab_frame()
 
@@ -148,16 +158,17 @@ for i, chunk in enumerate(audio_rolled[frame_width]):
     # plt.plot(np.random.random(100))
 
     fig.canvas.draw()
+    fig.savefig(p.stdin, format='rgba', dpi=100)
     # plt.savefig(p.stdin, format='png')
 
+
+    # b = fig.canvas.tostring_argb()
+    # b = fig.canvas.tostring_rgb()
+    # print(type(b), len(b))
     # extract the image as an ARGB string
     # and write to pipe
-    p.stdin.write(fig.canvas.tostring_argb())
+    # p.stdin.write(fig.canvas.tostring_argb())
+    # p.stdin.write(b)
+#
+out, err = p.communicate()
 
-# Finish up
-p.communicate()
-
-
-
-cmd = 'ffmpeg', '-y', '-i', 'tmp.mp4', '-i', INPUT_AUDIO, '-c:v', 'copy', '-map', '0:v:0', '-map', '1:a:0', '-shortest', OUTPUT_VIDEO
-subprocess.check_output(cmd)
