@@ -1,62 +1,58 @@
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph.opengl as gl
-import pyqtgraph as pg
 import numpy as np
 import sys
 import time
 import signal
-import io
 import subprocess
-
-
 import pyqtgraph as pg
 import pyqtgraph.exporters
-
-# generate something to export
-# plt = pg.plot([1,5,2,4,3])
-
-# create an exporter instance, as an argument give it
-# the item you wish to export
-# exporter = pg.exporters.ImageExporter(plt.plotItem)
-
-# set export parameters if needed
-# exporter.parameters()['width'] = 100   # (note this also affects height parameter)
-
-# save to file
-# exporter.export('fileName.png')
-
-
-f = io.BytesIO()
+from pyqtgraph import functions as fn
+import io
 
 canvas_width, canvas_height = 1920, 1080
 
+shape = canvas_width, canvas_height
+
 outf = 'tmp.mp4'
-cmdstring = ('ffmpeg',
+
+cmd = ('ffmpeg',
+    # '-hwaccel', 'videotoolbox', '-threads', '8',
+    '-hwaccel', 'videotoolbox', '-threads', '16',
     '-y', '-r', '60', # overwrite, 60fps
-    '-s', '%dx%d' % (canvas_width, canvas_height), # size of image string
+    '-s', f'{canvas_width}x{canvas_height}', # size of image string
     '-pix_fmt', 'argb', # format
-    '-f', 'rawvideo',  '-i', '-', # tell ffmpeg to expect raw video from the pipe
-    '-vcodec', 'mpeg4', outf) # output encoding
-p = subprocess.Popen(cmdstring, stdin=subprocess.PIPE)
+    # '-pix_fmt', 'yuv420p', # format
+    '-f', 'rawvideo',
+    '-i', '-', # tell ffmpeg to expect raw video from the pipe
+    '-c:v', 'hevc_videotoolbox', '-profile:v', 'main10', '-tag:v', 'hvc1', '-b:v', '1M', '-an', '-sn', outf)
+
+    # '-vcodec', 'h264_videotoolbox', '-profile:v', 'high', outf) # output encoding
+
+# ffmpeg -i [input_file] -c:v hevc_videotoolbox -profile:v main10 -tag:v hvc1 -b:v 10000k -an -sn output_filename.mp4
+
+p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
 
+# ib = io.BytesIO()
 
+# -vcodec hevc_videotoolbox
+print('f')
 class Visualizer(QtGui.QWidget):
     def __init__(self):
         super().__init__()
 
-        pg.setConfigOption('background', 'w')
-        pg.setConfigOption('foreground', 'k')
+        # pg.setConfigOption('background', 'w')
+        # pg.setConfigOption('foreground', 'k')
 
-        self.setWindowTitle('Signal from stethoscope')
         self.layout = QtGui.QVBoxLayout()
 
-        self.app = QtGui.QApplication(sys.argv)
+        # self.app = QtGui.QApplication(sys.argv)
 
 
         self.glayout = pg.GraphicsLayoutWidget()
-        # self.view = self.glayout.addViewBox(lockAspect=False)
-        self.view = self.glayout.addViewBox(lockAspect=True)
+        self.view = self.glayout.addViewBox(lockAspect=False)
+        # self.view = self.glayout.addViewBox(lockAspect=True)
         self.img = pg.ImageItem(border='w')
         self.view.addItem(self.img)
         # bipolar colormap
@@ -72,18 +68,13 @@ class Visualizer(QtGui.QWidget):
 
         self.setLayout(self.layout)
         self.setGeometry(10, 10, 500, 500)
+    
         self.show() 
+        self.hide()
+        # self.close()
 
 
-        self.frame = 0
-
-
-        timer = QtCore.QTimer()
-        timer.timeout.connect(self.update)
-        # timer.start(0)
-        timer.start(1000)
-        self.start()
-
+        self.update()
 
 
     def start(self):
@@ -93,30 +84,35 @@ class Visualizer(QtGui.QWidget):
 
 
     def update(self):
-        self.img.setImage(np.random.random((100, 100)), autoLevels=True)
-        exporter = pg.exporters.ImageExporter(self.view)
+        print('lol')
+        for frame in range(300):
 
-        exporter.params.param('width').setValue(1920, blockSignal=exporter.widthChanged)
-        exporter.params.param('height').setValue(1080, blockSignal=exporter.heightChanged)
+            self.img.setImage(np.random.random((canvas_width, canvas_height)), autoLevels=True)
+            exporter = pg.exporters.ImageExporter(self.view)
 
-        # exporter.params.param('width').setValue(1920, blockSignal=exporter.widthChanged)
-        # exporter.params.param('height').setValue(1080, blockSignal=exporter.heightChanged)
+            exporter.params.param('width').setValue(canvas_width, blockSignal=exporter.widthChanged)
+            exporter.params.param('height').setValue(canvas_height, blockSignal=exporter.heightChanged)
 
-        # exporter.export(f'frames/{self.frame}.png')
-        b = exporter.export(toBytes=True).data.tobytes()
-        # f.write(b)
-        p.stdin.write(b)
+            im = exporter.export(toBytes=True)
 
-        self.frame += 1
+            buffer = QtCore.QBuffer()
+            buffer.open(QtCore.QIODevice.WriteOnly)
+            # buffer.open(QtCore.QIODevice.ReadWrite)
+            im.save(buffer, 'PNG')
+            b = buffer.data()
+            # print(b)
 
-        if self.frame == 5:
-            p.communicate()
-            i = input()
-        # exporter = pg.exporters.ImageExporter(self.img)
-        # exporter.parameters()['width'] = 100   # (note this also affects height parameter)
-        # exporter.parameters()['width'] = 100   # (note this also affects height parameter)
-        # exporter.export('fileName.png')
-        # sys.exit(1)
+            # print(hasattr(z, 'data'))
+            # print(z.pixelFormat().yuvLayout())
+            # print(z.bits())
+            # b = z.data.tobytes()
+            # z.save(p.stdin, 'PNG')
+            p.stdin.write(b)
+            # ib.write(b)
+
+
+
+        p.communicate()
 
 
 
