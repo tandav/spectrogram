@@ -136,36 +136,38 @@ last_frame = 0
 
 
 # Open an ffmpeg process
-# cmd = ('ffmpeg',
-#     '-loglevel', 'trace',
-#     '-hwaccel', 'videotoolbox',
-#     '-threads', '16',
-#     '-y', '-r', '60', # overwrite, 60fps
-#      '-s', f'{frame_width}x{frame_height}',  # size of image string
-#      '-f', 'rawvideo',
-#      # '-pix_fmt', 'argb', # format
-#      '-pix_fmt', 'rgba', # format
-#      # '-pix_fmt', 'rgb24', # format
-#     # '-f', 'image2pipe',
-#     # '-i', 'pipe:', '-', # tell ffmpeg to expect raw video from the pipe
-#     '-i', '-', # tell ffmpeg to expect raw video from the pipe
-#     '-i', INPUT_AUDIO,
-#     # '-c:v', 'hevc_videotoolbox',
-#     '-c:v', 'libx264',
-#     '-pix_fmt', 'yuv420p',
-#     # '-tag:v', 'hvc1', '-profile:v', 'main10',
-#     # '-b:v', '16M',
-#     # '-b:v', '1M',
-#     '-b:v', '100k',
-#      OUTPUT_VIDEO) # output encoding
-#
-# p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+cmd = ('ffmpeg',
+    '-loglevel', 'trace',
+    '-hwaccel', 'videotoolbox',
+    '-threads', '16',
+    '-y', '-r', '60', # overwrite, 60fps
+     '-s', f'{frame_width}x{frame_height}',  # size of image string
+     '-f', 'rawvideo',
+     # '-pix_fmt', 'argb', # format
+     '-pix_fmt', 'rgba', # format
+     # '-pix_fmt', 'rgb24', # format
+    # '-f', 'image2pipe',
+    # '-i', 'pipe:', '-', # tell ffmpeg to expect raw video from the pipe
+    '-i', '-', # tell ffmpeg to expect raw video from the pipe
+    '-i', INPUT_AUDIO,
+    '-c:v', 'hevc_videotoolbox',
+    # '-c:v', 'libx264',
+    '-pix_fmt', 'yuv420p',
+    '-tag:v', 'hvc1', '-profile:v', 'main10',
+    # '-b:v', '16M',
+    '-b:v', '1M',
+    # '-b:v', '100k',
+     OUTPUT_VIDEO) # output encoding
 
-# for i, chunk in enumerate(audio_rolled[frame_width]):
-for i, chunk in enumerate(audio_rolled):
+p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+
+# it = audio_rolled[frame_width]
+it = audio_rolled
+
+for i, chunk in enumerate(it):
     if i % 10 == 0:
         fps = (i - last_frame) / (time.time() - t)
-        print(f'{i + 1} / {len(audio_rolled)}, {round((i + 1)/len(audio_rolled), 3)}, FPS: {fps}')
+        print(f'{i + 1} / {len(it)}, {round((i + 1)/len(it), 3)}, FPS: {fps}')
         t = time.time()
         last_frame = i
     a = 20 * np.log10(np.abs(np.fft.rfft(chunk * win)))[:-1]
@@ -181,8 +183,8 @@ for i, chunk in enumerate(audio_rolled):
     ff = frame.T
     quad_mesh.set_array(ff[:-1,:-1].ravel())
 
-    # quad_mesh.set_array(np.random.randint(-200, 0, size=(frame_height, frame_width))[:-1, :-1].ravel())
     # writer.grab_frame()
+    fig.savefig(p.stdin, format='rgba', dpi=100)
 
     if i == 500:
         break
@@ -195,10 +197,9 @@ for i, chunk in enumerate(audio_rolled):
         # fig.canvas.draw()
         # fig.canvas.draw()
         # fig.canvas.flush_events()
-        # fig.savefig(p.stdin, format='rgba', dpi=100)
         # break
 # plt.savefig(p.stdin, format='png')
-fig.savefig('frame.png', dpi=100)
+# fig.savefig('frame.png', dpi=100)
 
 # b = fig.canvas.tostring_argb()
     # b = fig.canvas.tostring_rgb()
@@ -208,5 +209,5 @@ fig.savefig('frame.png', dpi=100)
     # p.stdin.write(fig.canvas.tostring_argb())
     # p.stdin.write(b)
 #
-# out, err = p.communicate()
+out, err = p.communicate()
 
