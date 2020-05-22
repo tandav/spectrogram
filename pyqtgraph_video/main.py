@@ -11,26 +11,39 @@ from pyqtgraph import functions as fn
 import io
 
 canvas_width, canvas_height = 1920, 1080
+# canvas_width, canvas_height = 1920 * 2, 1080 * 2
 
 shape = canvas_width, canvas_height
 
 outf = 'tmp.mp4'
 
 cmd = ('ffmpeg',
-    # '-hwaccel', 'videotoolbox', '-threads', '8',
-    '-hwaccel', 'videotoolbox', '-threads', '16',
+    '-loglevel', 'trace',
+    '-hwaccel', 'videotoolbox', 
+    # '-threads', '16',
     '-y', '-r', '60', # overwrite, 60fps
     '-s', f'{canvas_width}x{canvas_height}', # size of image string
     '-pix_fmt', 'argb', # format
+    # '-pix_fmt', 'videotoolbox_vld', # format
     # '-pix_fmt', 'yuv420p', # format
-    '-f', 'rawvideo',
+    # '-f', 'rawvideo',
     '-i', '-', # tell ffmpeg to expect raw video from the pipe
-    '-c:v', 'hevc_videotoolbox', '-profile:v', 'main10', '-tag:v', 'hvc1', '-b:v', '1M', '-an', '-sn', outf)
+    # '-c:v', 'hevc_videotoolbox', '-pix_fmt', 'yuv420p', '-tag:v', 'hvc1', '-profile:v', 'main10', '-b:v', '10M', '-an', '-sn',
+    '-c:v', 'hevc_videotoolbox', '-pix_fmt', 'yuv420p', '-tag:v', 'hvc1', '-profile:v', 'main10',
+    '-b:v', '16M',
+    # '-c:v', 'h264_videotoolbox', '-pix_fmt', 'yuv420p', '-b:v', '5M',
+    # '-c:v', 'h264_videotoolbox', '-b:v', '1M', '-an', '-sn', 
+    # '-pix_fmt', 'videotoolbox_vld', # format
+
+  
+    outf)
+    # '-c:v', 'hevc_videotoolbox', '-profile:v', 'main10', '-tag:v', 'hvc1', '-b:v', '1M', '-an', '-sn', outf)
+    # '-c:v', 'libx265', '-tag:v', 'hvc1', '-b:v', '1M', '-an', '-sn', outf)
 
     # '-vcodec', 'h264_videotoolbox', '-profile:v', 'high', outf) # output encoding
 
 # ffmpeg -i [input_file] -c:v hevc_videotoolbox -profile:v main10 -tag:v hvc1 -b:v 10000k -an -sn output_filename.mp4
-
+# [format @ 0x7ff5caf04b40] Setting 'pix_fmts' to value 'videotoolbox_vld|nv12|yuv420p|p010le'
 p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
 
