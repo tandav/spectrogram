@@ -17,11 +17,11 @@ def scale(x, newmin=0., newmax=1.):
 INPUT_AUDIO  = '/Users/tandav/Documents/GoogleDrive/radiant.wav'
 OUTPUT_VIDEO = '/Users/tandav/Desktop/radiant2.mp4'
 
-frame_width  = 1920
-frame_height = 1080
+# frame_width  = 1920
+# frame_height = 1080
 
-# frame_width  = 1920 // 4
-# frame_height = 1080 // 4
+frame_width  = 1920 // 2
+frame_height = 1080 // 2
 
 
 rate, track = read(INPUT_AUDIO) # now supports only mono .wav files
@@ -162,7 +162,7 @@ cmd = ('ffmpeg',
 p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
 
 # it = audio_rolled[frame_width]
-it = audio_rolled
+it = audio_rolled[:250]
 
 for i, chunk in enumerate(it):
     if i % 10 == 0:
@@ -186,8 +186,8 @@ for i, chunk in enumerate(it):
     # writer.grab_frame()
     fig.savefig(p.stdin, format='rgba', dpi=100)
 
-    if i == 500:
-        break
+    # if i == 500:
+    #     break
 
     # draw the frame
     # update(frame)
@@ -211,3 +211,4 @@ for i, chunk in enumerate(it):
 #
 out, err = p.communicate()
 
+subprocess.run(('open', OUTPUT_VIDEO))
