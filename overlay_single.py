@@ -20,7 +20,6 @@ def scale(x, newmin=0., newmax=1.):
     return (x - oldmin) * (newmax - newmin) / (oldmax - oldmin) + newmin
 
 
-n = 1000
 x = np.linspace(0, width, width)
 y = np.linspace(0, height, height)
 X, Y = np.meshgrid(x, y)
@@ -34,8 +33,8 @@ fig, ax = plt.subplots(figsize=(width / 100, height / 100), frameon=False, dpi=1
 fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
 # quad_mesh = ax.pcolormesh(X, Y, a.T, cmap='viridis')
 quad_mesh = ax.pcolormesh(X, Y, a, cmap='viridis')
-rect = Rectangle((0, 0), 0, 0, linewidth=0, facecolor='black', alpha=0.3)
-# rect = Rectangle((0, 0), width // 3, height, linewidth=0, facecolor='black', alpha=0.8)
+# rect = Rectangle((0, 0), 50, 50, linewidth=0, facecolor='black', alpha=0.3)
+rect = Rectangle((0, 0), width // 3, height, linewidth=0, facecolor='black', alpha=0.8)
 # ax.add_patch(rect)
 # ax.grid(False)
 # ax.axis('off')
@@ -47,7 +46,6 @@ rect = Rectangle((0, 0), 0, 0, linewidth=0, facecolor='black', alpha=0.3)
 # subprocess.run(('open', '/Users/tandav/Desktop/img/1.png'))
 
 
-
 OUTPUT_VIDEO = '/Users/tandav/Desktop/rect.mp4'
 
 cmd = (
@@ -55,7 +53,7 @@ cmd = (
     '-loglevel', 'info',
     '-hwaccel', 'videotoolbox',
     '-threads', '16',
-    '-y', '-r', '60',  # overwrite, 60fps
+    '-y', '-r', '30',  # overwrite, 60fps
     '-s', f'{width}x{height}',  # size of image string
     '-f', 'rawvideo',
     # '-pix_fmt', 'argb', # format
@@ -81,8 +79,12 @@ ffmpeg = subprocess.Popen(cmd, stdin=subprocess.PIPE, bufsize=10 ** 8)
 
 for i in range(20):
     # rect.set_bounds((0, 0, i*20, height))
-    rect.set_bounds(0, random.randint(0, 100), 50, 50)
-    ax.add_patch(rect)
+    # rect.set_bounds(random.choice(100, 200), random.randint(0, 200), 50, 50) # left, bottom, width, height
+    # rect.set_bounds(i, random.randint(0, 200), 50, 50) # left, bottom, width, height
+    # rect.set_xy((0, random.randint(0, 200)))
+
+    # ax.add_patch(rect)
+    ax.add_patch(Rectangle((0, i * 20), 50, 50, linewidth=0, facecolor='black', alpha=0.5))
     fig.savefig(ffmpeg.stdin, format='rgba', dpi=100)
     # fig.savefig(ffmpeg.stdin, dpi=100)
     print('task.i:', i)
