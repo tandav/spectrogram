@@ -6,7 +6,9 @@ import subprocess
 import multiprocessing
 
 
-
+class color:
+    RED   = lambda s: '\033[31m' + str(s) + '\033[0m'
+    GREEN = lambda s: '\033[32m' + str(s) + '\033[0m'
 
 
 def task(args):
@@ -32,7 +34,7 @@ def task(args):
     for i in range(slice_.start, slice_.stop):
         rect.set_bounds((0, 0, i, height))
         fig.savefig(b, format='rgba', dpi=100)
-        print('task.i:', i)
+        print('task_id:', task_id, 'i', i)
 
     return task_id, b.getvalue()
 
@@ -65,11 +67,11 @@ def yield_block_slices(n, block_size=10):
 
 if __name__ == '__main__':
 
-    width  = 1920 // 2
-    height = 1080 // 2
-    shape  = width, height
-    fpp    = 10  # frames per process
-    n_processes = 4
+    width       = 1920
+    height      = 1080
+    shape       = width, height
+    fpp         = 10  # frames per process
+    n_processes = 16
 
     a = np.random.random(shape)
 
@@ -105,12 +107,12 @@ if __name__ == '__main__':
         _ = enumerate(_)
         args = [(i, a, slice_) for i, slice_ in _]
 
-        args = args[:4] # debug
+        args = args[:20] # debug
 
         for task_id, b in pool.imap(task, args):
-            print('start task', task_id)
+            print(color.RED('START task'), task_id)
             ffmpeg.stdin.write(b)
-            print('end task', task_id)
+            print(color.GREEN('END task'), task_id)
 
 
     ffmpeg.communicate()
