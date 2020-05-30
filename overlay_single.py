@@ -34,7 +34,7 @@ fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
 # quad_mesh = ax.pcolormesh(X, Y, a.T, cmap='viridis')
 quad_mesh = ax.pcolormesh(X, Y, a, cmap='viridis')
 # rect = Rectangle((0, 0), 50, 50, linewidth=0, facecolor='black', alpha=0.3)
-rect = Rectangle((0, 0), width // 3, height, linewidth=0, facecolor='black', alpha=0.8)
+# rect = Rectangle((0, 0), width // 3, height, linewidth=0, facecolor='black', alpha=0.3)
 # ax.add_patch(rect)
 # ax.grid(False)
 # ax.axis('off')
@@ -78,13 +78,17 @@ ffmpeg = subprocess.Popen(cmd, stdin=subprocess.PIPE, bufsize=10 ** 8)
 
 
 for i in range(20):
+    rect = Rectangle((i, i * 20), 50, 50, linewidth=0, facecolor='black', alpha=0.5)
+    ax.add_patch(rect)
+
     # rect.set_bounds((0, 0, i*20, height))
     # rect.set_bounds(random.choice(100, 200), random.randint(0, 200), 50, 50) # left, bottom, width, height
     # rect.set_bounds(i, random.randint(0, 200), 50, 50) # left, bottom, width, height
     # rect.set_xy((0, random.randint(0, 200)))
 
-    # ax.add_patch(rect)
-    ax.add_patch(Rectangle((0, i * 20), 50, 50, linewidth=0, facecolor='black', alpha=0.5))
+
+    # rect.set_width(i * 20)
+
     fig.savefig(ffmpeg.stdin, format='rgba', dpi=100)
     # fig.savefig(ffmpeg.stdin, dpi=100)
     print('task.i:', i)
@@ -92,6 +96,8 @@ for i in range(20):
     # fig.savefig('/Users/tandav/Desktop/img/0.png', dpi=100)
     # fig.savefig('/Users/tandav/Desktop/img/1.png', format='rgba', dpi=100)
     # fig.savefig('/Users/tandav/Desktop/img/1.png', dpi=100)
+    rect.remove()
+
 
 
 ffmpeg.communicate()
