@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import subprocess
 import multiprocessing
-
+import random
 
 
 width = 1920 // 2
@@ -80,7 +80,8 @@ ffmpeg = subprocess.Popen(cmd, stdin=subprocess.PIPE, bufsize=10 ** 8)
 
 
 for i in range(20):
-    rect.set_bounds((0, 0, i*20, height))
+    # rect.set_bounds((0, 0, i*20, height))
+    rect.set_bounds(0, random.randint(0, 100), 50, 50)
     ax.add_patch(rect)
     fig.savefig(ffmpeg.stdin, format='rgba', dpi=100)
     # fig.savefig(ffmpeg.stdin, dpi=100)
