@@ -23,7 +23,8 @@ quad_mesh = ax.pcolormesh(X, Y, a, cmap='viridis')
 ax.grid(False)
 ax.axis('off')
 # ax.semilogy()
-
+rect = Rectangle((0, 0), 0, height, linewidth=0, facecolor='black', alpha=0.5)
+ax.add_patch(rect)
 
 OUTPUT_VIDEO = '/Users/tandav/Desktop/rect.mp4'
 
@@ -48,15 +49,8 @@ ffmpeg = subprocess.Popen(cmd, stdin=subprocess.PIPE, bufsize=10 ** 8)
 
 for i in range(40):
     print('task.i:', i)
-    rect = Rectangle((0, 0), i, height, linewidth=0, facecolor='black', alpha=0.5)
-    ax.add_patch(rect)
-    # rect.set_bounds((0, 0, i*20, height))
-    # rect.set_bounds(random.choice(100, 200), random.randint(0, 200), 50, 50) # left, bottom, width, height
-    # rect.set_bounds(i, random.randint(0, 200), 50, 50) # left, bottom, width, height
-    # rect.set_xy((0, random.randint(0, 200)))
-    # rect.set_width(i * 20)
+    rect.set_bounds((0, 0, i, height))
     fig.savefig(ffmpeg.stdin, format='rgba', dpi=100)
-    rect.remove()
 
 
 
