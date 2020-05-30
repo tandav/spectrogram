@@ -34,7 +34,7 @@ fig, ax = plt.subplots(figsize=(width / 100, height / 100), frameon=False, dpi=1
 fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
 # quad_mesh = ax.pcolormesh(X, Y, a.T, cmap='viridis')
 quad_mesh = ax.pcolormesh(X, Y, a, cmap='viridis')
-rect = Rectangle((0, 0), 0, 0, linewidth=0, facecolor='black', alpha=0.5)
+rect = Rectangle((0, 0), 0, 0, linewidth=0, facecolor='black', alpha=0.3)
 # rect = Rectangle((0, 0), width // 3, height, linewidth=0, facecolor='black', alpha=0.8)
 # ax.add_patch(rect)
 # ax.grid(False)
@@ -80,10 +80,8 @@ ffmpeg = subprocess.Popen(cmd, stdin=subprocess.PIPE, bufsize=10 ** 8)
 
 
 for i in range(20):
-    ax.add_patch(Rectangle((0, 0), i * 20, height, linewidth=0, facecolor='black', alpha=0.8))
-
-    # rect.set_bounds((0, 0, i*20, height))
-    # ax.add_patch(rect)
+    rect.set_bounds((0, 0, i*20, height))
+    ax.add_patch(rect)
     fig.savefig(ffmpeg.stdin, format='rgba', dpi=100)
     # fig.savefig(ffmpeg.stdin, dpi=100)
     print('task.i:', i)
