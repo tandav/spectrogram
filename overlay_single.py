@@ -33,7 +33,8 @@ cmd = (
     '-loglevel', 'info',
     '-hwaccel', 'videotoolbox',
     '-threads', '16',
-    '-y', '-r', '60',  # overwrite, 60fps
+    '-y',
+    '-r', '60',  # overwrite, 60fps
     '-s', f'{width}x{height}',  # size of image string
     '-f', 'rawvideo',
     '-pix_fmt', 'rgba',  # format
