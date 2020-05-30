@@ -35,21 +35,11 @@ cmd = (
     '-y', '-r', '60',  # overwrite, 60fps
     '-s', f'{width}x{height}',  # size of image string
     '-f', 'rawvideo',
-    # '-pix_fmt', 'argb', # format
     '-pix_fmt', 'rgba',  # format
-    # '-pix_fmt', 'rgb24', # format
-    # '-f', 'image2pipe',
-    # '-i', 'pipe:', '-', # tell ffmpeg to expect raw video from the pipe
     '-i', '-',  # tell ffmpeg to expect raw video from the pipe
-    # '-i', INPUT_AUDIO,
     '-c:v', 'hevc_videotoolbox',
-    # '-c:v', 'libx264',
-    # '-pix_fmt', 'yuv420p',
     '-tag:v', 'hvc1', '-profile:v', 'main10',
     '-b:v', '16M',
-    # '-b:v', '1M',
-    # '-b:v', '100k',
-    '-shortest',
     OUTPUT_VIDEO,
 )
 
